@@ -89,7 +89,28 @@ mvn -f tika-core/pom.xml \
   -Dtest=CharsetSupersetsTest,CharsetSupersetsDecodeAsTest test
 ```
 
-Résultat ciblé : 6 tests exécutés, 0 échec, 0 erreur. La suite complète de tika-core a aussi réussi : 752 tests exécutés, 0 échec, 0 erreur, 2 tests ignorés. Checkstyle a rapporté 0 violation. Le rapport PIT a été exécuté deux fois et donne les scores présentés ci-dessus. L’action GitHub doit encore être vérifiée après publication de ces changements; nous ne prétendons pas qu’une exécution distante a déjà réussi.
+Résultat ciblé : 6 tests exécutés, 0 échec, 0 erreur. La suite complète de `tika-core` a aussi réussi localement : 752 tests exécutés, 0 échec, 0 erreur, 2 tests ignorés. Checkstyle a rapporté 0 violation. Le rapport PIT a été exécuté avec les deux configurations et donne les scores présentés ci-dessus.
+
+Sur GitHub Actions, les six tests ciblés ont réussi sur les builds Linux JDK 17, 21 et 25. Les builds Windows standard et multi-locale ont réussi après l’activation de `core.longpaths`. Les builds Linux complets ont ensuite échoué dans `tika-pipes-s3-integration-tests`, lorsque Testcontainers n’a pas pu télécharger l’image MinIO (« unauthorized: access to the requested resource is not authorized »). Cette erreur concerne une intégration S3 sans lien avec `CharsetSupersets`; elle ne constitue pas un succès du build complet. Les tests ajoutés sont bien exécutés et réussis dans ces workflows avant cette erreur ultérieure.
+
+- [Build Linux JDK 17](https://github.com/yohanzytoon/IFT3913-tache2-tika/actions/runs/38431765884)
+- [Build Linux JDK 21](https://github.com/yohanzytoon/IFT3913-tache2-tika/actions/runs/38431764951)
+- [Build Linux JDK 25](https://github.com/yohanzytoon/IFT3913-tache2-tika/actions/runs/38431765108)
+- [Build Windows JDK 17](https://github.com/yohanzytoon/IFT3913-tache2-tika/actions/runs/38431765220)
+- [Build Windows multi-locale](https://github.com/yohanzytoon/IFT3913-tache2-tika/actions/runs/38431764893)
+
+## Correspondance avec les critères
+
+| Critère | Éléments documentés |
+|---|---|
+| Choix et couverture de la classe | Couverture JaCoCo de départ, tests préexistants et mutants PIT non couverts dans `decodeAs`. |
+| ChatUniTest et génération | Version du plugin dans Maven, classe ciblée, commande exacte, modèle Ollama et emplacement des diagnostics. |
+| Critique des tests générés | Quatre compilations échouées, dépendances manquantes, problème d’oracle circulaire et sélection des cas réutilisables après correction. |
+| Mutation | Commandes PIT, configuration, scores avec tests originaux puis suite étendue et nombres de mutants. |
+| Mutants détectés | Les cinq mutants et le comportement exercé pour les tuer sont décrits; aucun mutant vivant ou sans couverture ne reste dans cette exécution. |
+| Tests ajoutés à la main | Nom, intention, motivation des données et oracle explicite pour chacun des trois tests. |
+| Exécution | Résultats locaux complets et ciblés, résultats CI des tests ciblés et cause externe des échecs Linux complets. |
+| Emplacement du rapport | Ce fichier est le rapport unique à la racine du dépôt. |
 
 ## Références
 
@@ -98,3 +119,10 @@ Résultat ciblé : 6 tests exécutés, 0 échec, 0 erreur. La suite complète de
 - [Compatibilité OpenAI de l’API Ollama](https://github.com/ollama/ollama/blob/main/docs/api/openai-compatibility.mdx)
 - [Guide Maven PIT](https://pitest.org/quickstart/maven/)
 - [Adaptateur JUnit 5 de PIT](https://github.com/pitest/pitest-junit5-plugin)
+
+
+## Utilisation de l’IA générative
+
+ChatUniTest 2.1.1 a servi à générer des brouillons de tests pour `CharsetSupersets` avec le modèle local Qwen2.5-Coder 3B exécuté par Ollama. Le modèle a reçu la classe cible et a produit des propositions pour `supersetOf` et `decodeAs`; ses sorties et erreurs de compilation ont été examinées manuellement. Aucun brouillon brut n’a été intégré tel quel : les quatre tentatives de compilation ont échoué, et les tests retenus ont été corrigés pour retirer les dépendances absentes et remplacer l’oracle circulaire par des résultats attendus explicites.
+
+Un assistant de programmation basé sur un modèle de langage a également aidé à organiser et relire cette documentation ainsi qu’à interpréter les résultats CI. Les membres de l’équipe ont vérifié les commandes, les rapports de tests, les mutants PIT et les journaux GitHub Actions avant de rapporter les résultats. L’IA a servi d’assistance; les mesures et les conclusions présentées ici sont rattachées aux exécutions décrites dans ce rapport.
