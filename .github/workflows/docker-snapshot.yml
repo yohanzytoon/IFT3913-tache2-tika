@@ -55,7 +55,8 @@ jobs:
 
   build:
     needs: gate
-    if: needs.gate.outputs.publish == 'true'
+    # Snapshot images are published by the upstream project, not by forks.
+    if: needs.gate.outputs.publish == 'true' && github.repository == 'umontreal-diro/tika'
     runs-on: ubuntu-latest
     timeout-minutes: 120
 

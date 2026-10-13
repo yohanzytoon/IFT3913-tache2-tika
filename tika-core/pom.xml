@@ -154,6 +154,43 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>io.github.zju-aces-ise</groupId>
+        <artifactId>chatunitest-maven-plugin</artifactId>
+        <version>2.1.1</version>
+        <configuration>
+          <apiKeys>ollama-local</apiKeys>
+          <model>code-llama</model>
+          <url>http://localhost:11434/v1/chat/completions</url>
+          <testNumber>1</testNumber>
+          <maxRounds>2</maxRounds>
+          <thread>false</thread>
+          <tmpOutput>${project.build.directory}/chatunitest-info</tmpOutput>
+          <testOutput>${project.build.directory}/chatunitest-generated</testOutput>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>1.30.0</version>
+        <configuration>
+          <targetClasses>
+            <param>org.apache.tika.detect.CharsetSupersets</param>
+          </targetClasses>
+          <targetTests>
+            <param>org.apache.tika.detect.CharsetSupersets*Test</param>
+          </targetTests>
+          <threads>1</threads>
+          <timestampedReports>false</timestampedReports>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>1.2.3</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
