@@ -23,11 +23,20 @@ jobs:
         run: mvn -B install -pl tika-core -am -DskipTests
       - name: Tests CharsetSupersetsTest et CharsetSupersetsDecodeAsTest
         run: mvn -B test -pl tika-core -Dtest=CharsetSupersetsTest,CharsetSupersetsDecodeAsTest
-      - name: Analyse de mutation PIT (CharsetSupersets)
-        run: mvn -B org.pitest:pitest-maven:1.30.0:mutationCoverage -pl tika-core
-      - name: Rapport pitest
+      - name: PIT avec les tests originaux (CharsetSupersetsTest)
+        run: >
+          mvn -B org.pitest:pitest-maven:1.30.0:mutationCoverage -pl tika-core
+          -Dpit.targetTests=org.apache.tika.detect.CharsetSupersetsTest
+          -DreportsDirectory=target/pit-reports-originaux
+      - name: PIT avec les tests originaux et ajoutés (CharsetSupersets*Test)
+        run: >
+          mvn -B org.pitest:pitest-maven:1.30.0:mutationCoverage -pl tika-core
+          -DreportsDirectory=target/pit-reports-etendus
+      - name: Rapports pitest
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rapport-pitest
-          path: tika-core/target/pit-reports
+          name: rapports-pitest
+          path: |
+            tika-core/target/pit-reports-originaux
+            tika-core/target/pit-reports-etendus

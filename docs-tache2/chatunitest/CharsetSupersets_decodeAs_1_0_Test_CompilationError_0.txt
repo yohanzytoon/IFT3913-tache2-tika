@@ -1,0 +1,65 @@
+package org.apache.tika.detect;
+
+import org.apache.tika.detect.CharsetSupersets;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import java.util.Collections;
+import java.util.Map;
+
+@ExtendWith(MockitoExtension.class)
+public class CharsetSupersets_decodeAs_1_0_Test {
+
+    @Mock
+    private static Map<String, String> mockSUPERSET_MAP;
+
+    @InjectMocks
+    private static CharsetSupersets charsetSupersets;
+
+    @BeforeEach
+    public void setUp() {
+        HashMap<String, String> superSetMap = new HashMap<>();
+        superSetMap.put("UTF-8", "ISO-8859-1");
+        when(mockSUPERSET_MAP.get(anyString())).thenReturn("ISO-8859-1");
+    }
+
+    @Test
+    public void testDecodeAs_withSuperset() {
+        Charset detected = Charset.forName("UTF-8");
+        Charset result = charsetSupersets.decodeAs(detected);
+        assertEquals(Charset.forName("ISO-8859-1"), result);
+    }
+
+    @Test
+    public void testDecodeAs_withoutSuperset() {
+        Charset detected = Charset.forName("ASCII");
+        Charset result = charsetSupersets.decodeAs(detected);
+        assertEquals(detected, result);
+    }
+}
+
+--------------------------------------------
+Error in CharsetSupersets_decodeAs_1_0_Test: line -1 : Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+Error in CharsetSupersets_decodeAs_1_0_Test: line -1 : Supported source version 'RELEASE_17' from annotation processor 'org.apache.tika.annotation.TikaComponentProcessor' less than -source '21'
+Error in CharsetSupersets_decodeAs_1_0_Test: line 7 : package org.mockito.junit.jupiter does not exist
+Error in CharsetSupersets_decodeAs_1_0_Test: line 10 : package org.mockito does not exist
+Error in CharsetSupersets_decodeAs_1_0_Test: line 8 : package org.mockito does not exist
+Error in CharsetSupersets_decodeAs_1_0_Test: line 15 : cannot find symbol
+  symbol: class MockitoExtension
+Error in CharsetSupersets_decodeAs_1_0_Test: line 18 : cannot find symbol
+  symbol:   class Mock
+  location: class org.apache.tika.detect.CharsetSupersets_decodeAs_1_0_Test
+Error in CharsetSupersets_decodeAs_1_0_Test: line 21 : cannot find symbol
+  symbol:   class InjectMocks
+  location: class org.apache.tika.detect.CharsetSupersets_decodeAs_1_0_Test

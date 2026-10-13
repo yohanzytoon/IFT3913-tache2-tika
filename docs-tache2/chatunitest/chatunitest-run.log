@@ -1,0 +1,98 @@
+[INFO] Maveniverse Nisse 0.9.4 loaded
+[INFO] Nisse injecting 32 properties into User Properties
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.apache.tika:tika-core:bundle:4.0.0-SNAPSHOT
+[WARNING] 'version' contains an expression but should be a constant. @ org.apache.tika:tika-parent:${revision}, IFT3913-tache2-tika\tika-parent\pom.xml, line 34, column 12
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] No need for inlining
+[INFO] 
+[INFO] ---------------------< org.apache.tika:tika-core >----------------------
+[INFO] Building Apache Tika core 4.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] -------------------------------[ bundle ]-------------------------------
+[INFO] 
+[INFO] --- chatunitest:2.1.1:class (default-cli) @ tika-core ---
+[INFO] 
+========================== Configuration ==========================
+
+[INFO] PluginSign >>>>CHATUNITEST
+[INFO]  Multithreading >>>> false
+[INFO]  Stop when success >>>> true
+[INFO]  No execution >>>> false
+[INFO]  Enable Merge >>>> true
+[INFO]  --- 
+[INFO]  TestOutput Path >>> IFT3913-tache2-tika\tika-core\target\chatunitest-generated\tika-parent\tika-core
+[INFO]  TmpOutput Path >>> IFT3913-tache2-tika\tika-core\target\chatunitest-info\tika-parent\tika-core
+[INFO]  CounterExample Path >>> IFT3913-tache2-tika\tika-core\smartut-tests
+[INFO]  Prompt path >>> null
+[INFO]  Example path >>> IFT3913-tache2-tika\tika-core\exampleUsage.json
+[INFO]  --- 
+[INFO]  Model >>> CODE_LLAMA
+[INFO]  Url >>> http://localhost:11434/v1/chat/completions
+[INFO]  MaxPromptTokens >>> 10923
+[INFO]  MaxResponseTokens >>> 1024
+[INFO]  MinErrorTokens >>> 500
+[INFO]  MaxThreads >>> 60
+[INFO]  TestNumber >>> 1
+[INFO]  MaxRounds >>> 2
+[INFO]  MinErrorTokens >>> 500
+[INFO]  MaxPromptTokens >>> 10923
+[INFO]  SleepTime >>> 0
+[INFO]  DependencyDepth >>> 1
+[INFO]  SampleSize >>> 10
+[INFO]  PhaseType >>> CHATUNITEST
+[INFO] 
+===================================================================
+
+[INFO] 
+==========================
+[CHATUNITEST] Parsing class info ...
+[INFO] 
+Parsed classes: 361
+Parsed methods: 1617
+[INFO] 
+==========================
+[CHATUNITEST] Parse finished
+[INFO] 
+==========================
+[CHATUNITEST] Generating tests for class < org.apache.tika.detect.CharsetSupersets > ...
+[INFO] 
+==========================
+[CHATUNITEST] Generating test for method < supersetOf > number 0...
+
+[INFO] Generating test for method < supersetOf > round 0 ...
+[INFO] Test for method < supersetOf > compilation failed round 0
+[INFO] Fixing test for method < supersetOf > round 1 ...
+[INFO] Test for method < supersetOf > compilation failed round 1
+[INFO] 
+==========================
+[CHATUNITEST] Completed Method Jobs:   [ 1 /  0]
+[INFO] 
+==========================
+[CHATUNITEST] Generating test for method < decodeAs > number 0...
+
+[INFO] Generating test for method < decodeAs > round 0 ...
+[INFO] Test for method < decodeAs > compilation failed round 0
+[INFO] Fixing test for method < decodeAs > round 1 ...
+[INFO] Test for method < decodeAs > compilation failed round 1
+[INFO] 
+==========================
+[CHATUNITEST] Completed Method Jobs:   [ 2 /  0]
+[INFO] Skip method: CharsetSupersets() in class: org.apache.tika.detect.CharsetSupersets
+[INFO] 
+==========================
+[CHATUNITEST] Generation finished
+[INFO] 
+==========================
+[CHATUNITEST] Test processed
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:38 min
+[INFO] Finished at: 2026-10-13T14:55:12-04:00
+[INFO] ------------------------------------------------------------------------

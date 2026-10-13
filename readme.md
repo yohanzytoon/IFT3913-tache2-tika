@@ -11,20 +11,24 @@ Nous avons étudié une seule classe, `org.apache.tika.detect.CharsetSupersets`,
 
 Cette classe convient à l’étude parce que son comportement est petit et observable : `supersetOf` traduit certains jeux de caractères vers leurs supersets, tandis que `decodeAs` choisit ce superset ou conserve le jeu détecté. Le test existant vérifie les six associations CJK, les cas sans association et le décodage de caractères d’extension.
 
+Les méthodes choisies ont bien des mutants que la suite originale ne tue pas. Avec `CharsetSupersetsTest` seul, PIT génère 5 mutants et n’en tue que 3 : les 2 mutants de `decodeAs` ne sont détectés par aucun test. PIT les classe `NO_COVERAGE` plutôt que `SURVIVED`, car aucun test original n’exécute `decodeAs` ; c’est la forme la plus forte de mutant non détecté, puisque la méthode n’est jamais appelée. Une seule classe suffit pour l’analyse : la consigne autorise une à trois classes, et une classe de 5 mutants permet de documenter chaque mutant individuellement, de relier chacun au test qui le tue et d’atteindre un score de 100 % vérifiable, plutôt que de rapporter un score global sur des dizaines de mutants non expliqués.
+
 ## ChatUniTest et modèle local
 
-Le plugin Maven ChatUniTest 2.1.1 est déclaré dans `tika-core/pom.xml`. La génération reste une commande explicite et ne s’exécute pas dans le cycle normal `mvn test`. La configuration limite la cible à la classe ci-dessus, écrit les résultats sous `tika-core/target/chatunitest-generated` et les informations de génération sous `tika-core/target/chatunitest-info`.
+Le plugin Maven ChatUniTest 2.1.1 est déclaré dans `tika-core/pom.xml`. La génération reste une commande explicite et ne s’exécute pas dans le cycle normal `mvn test`. La configuration limite la cible à la classe ci-dessus, écrit les résultats sous `tika-core/target/chatunitest-generated` et les informations de génération sous `tika-core/target/chatunitest-info`. Comme `target/` n’est pas versionné, les brouillons produits ont été copiés dans [`docs-tache2/chatunitest/`](docs-tache2/chatunitest/).
 
-Le modèle utilisé était Qwen2.5-Coder 3B avec Ollama. ChatUniTest 2.1.1 ne proposant pas cet identifiant dans son énumération intégrée, nous avons créé un alias Ollama `code-llama` pointant vers les mêmes poids Qwen2.5-Coder 3B. Le nom transmis au plugin est donc `code-llama`, mais les poids réellement utilisés sont Qwen2.5-Coder 3B. Ollama était servi localement par son endpoint compatible OpenAI `http://localhost:11434/v1/chat/completions`.
+Le modèle utilisé est Qwen2.5-Coder 7B (`qwen2.5-coder:7b`) servi localement par Ollama. ChatUniTest 2.1.1 ne proposant pas cet identifiant dans son énumération intégrée, nous avons créé un alias Ollama `code-llama` pointant vers les mêmes poids. Le nom transmis au plugin est donc `code-llama`, mais les poids réellement utilisés sont ceux de `qwen2.5-coder:7b`. Le plugin appelle l’endpoint compatible OpenAI d’Ollama `http://localhost:11434/v1/chat/completions`.
 
 Pour reproduire la préparation du modèle :
 
 ```sh
-ollama pull qwen2.5-coder:3b
-printf 'FROM qwen2.5-coder:3b\n' > /tmp/Ollama-Modelfile
-ollama create code-llama -f /tmp/Ollama-Modelfile
+ollama pull qwen2.5-coder:7b
+printf 'FROM qwen2.5-coder:7b\n' > Modelfile
+ollama create code-llama -f Modelfile
 ollama serve
 ```
+
+ChatUniTest 2.1.1 doit être exécuté avec un JDK 21 : sous JDK 25, le plugin échoue avant la génération (« Invalid Java version format: 25 »).
 
 Commande de génération exécutée depuis la racine du dépôt :
 
@@ -33,29 +37,55 @@ mvn -f tika-core/pom.xml io.github.zju-aces-ise:chatunitest-maven-plugin:2.1.1:c
   -DselectClass=org.apache.tika.detect.CharsetSupersets
 ```
 
-ChatUniTest a produit ses brouillons et diagnostics dans `tika-core/target/chatunitest-info/tika-parent/tika-core/error-message/`. Le répertoire configuré pour les tests exécutables est `tika-core/target/chatunitest-generated/`; aucune classe générée n’y a été conservée, car les compilations ont échoué. Les brouillons et diagnostics de compilation sont donc dans les fichiers `CharsetSupersets_supersetOf_0_0_Test_CompilationError_*.txt` et `CharsetSupersets_decodeAs_1_0_Test_CompilationError_*.txt` sous `error-message/`.
+ChatUniTest a produit ses brouillons et diagnostics dans `tika-core/target/chatunitest-info/tika-parent/tika-core/error-message/`. Le répertoire configuré pour les tests exécutables, `tika-core/target/chatunitest-generated/`, est resté vide : ChatUniTest n’y écrit que les tests qui compilent. Les quatre brouillons, chacun suivi de ses erreurs de compilation, sont versionnés ici :
+
+| Fichier | Méthode | Tour |
+|---|---|---|
+| [`CharsetSupersets_supersetOf_0_0_Test_CompilationError_0.txt`](docs-tache2/chatunitest/CharsetSupersets_supersetOf_0_0_Test_CompilationError_0.txt) | `supersetOf` | génération |
+| [`CharsetSupersets_supersetOf_0_0_Test_CompilationError_1.txt`](docs-tache2/chatunitest/CharsetSupersets_supersetOf_0_0_Test_CompilationError_1.txt) | `supersetOf` | réparation |
+| [`CharsetSupersets_decodeAs_1_0_Test_CompilationError_0.txt`](docs-tache2/chatunitest/CharsetSupersets_decodeAs_1_0_Test_CompilationError_0.txt) | `decodeAs` | génération |
+| [`CharsetSupersets_decodeAs_1_0_Test_CompilationError_1.txt`](docs-tache2/chatunitest/CharsetSupersets_decodeAs_1_0_Test_CompilationError_1.txt) | `decodeAs` | réparation |
+
+Le journal complet de l’exécution est dans [`docs-tache2/chatunitest/chatunitest-run.log`](docs-tache2/chatunitest/chatunitest-run.log).
 
 ### Résultat et critique des brouillons
 
-ChatUniTest a essayé `supersetOf` et `decodeAs` avec deux tours de compilation/réparation par méthode. Les quatre compilations ont échoué : les brouillons importaient Mockito et, pour `decodeAs`, les tests paramétrés JUnit, dépendances absentes du module. Le premier brouillon utilisait aussi Mockito pour simuler une map `static final` et tenter de construire une classe à constructeur privé. Le second calculait une partie de sa valeur attendue en appelant par réflexion `supersetOf`, ce qui aurait rendu cet oracle circulaire même après correction des dépendances.
+ChatUniTest a traité `supersetOf` et `decodeAs` avec un tour de génération et un tour de réparation par méthode (`maxRounds = 2`). **Les quatre compilations ont échoué ; aucun test généré ne compile ni ne s’exécute sans intervention manuelle.** La cause immédiate est commune : chaque brouillon importe Mockito (`org.mockito.*`, `MockitoExtension`), absent des dépendances de test de `tika-core`. Le tour de réparation n’a pas corrigé cette cause : pour `supersetOf`, le second brouillon est identique au premier à l’ordre des imports près ; pour `decodeAs`, il retire `@Mock` mais garde les imports Mockito et appelle une classe `ReflectionUtils` qui n’existe pas.
 
-Aucun test brut de ChatUniTest ne compile et ne s’exécute sans intervention. Nous avons fait une correction manuelle du brouillon utile pour `decodeAs` : un fichier de test JUnit simple, sans Mockito ni paramètres, avec des valeurs attendues explicites. Le brouillon `supersetOf` a été rejeté parce qu’il dépendait du mocking et vérifiait mal la map statique. Au total : 4 échecs de compilation automatiques, puis 1 fichier de tests corrigé manuellement. Le résultat illustre une limite du générateur sur un module ne déclarant pas les dépendances qu’il suppose.
+Au-delà de la compilation, les brouillons auraient échoué ou testé un faux comportement :
 
-Qualitativement, les cas `null` et « aucune association » suggérés pour `decodeAs` sont pertinents, mais le test paramétré proposé n’avait pas un oracle indépendant. Les tests écrits à la main dans `CharsetSupersetsTest` sont plus spécifiques : ils énoncent les noms canoniques attendus et démontrent le décodage d’octets d’extension en caractère `U+2460`. Les tests corrigés ci-dessous gardent l’intention utile du brouillon en l’exprimant avec un oracle direct.
+| Brouillon | Problème | Conséquence |
+|---|---|---|
+| `decodeAs`, les deux tours | L’oracle affirme que `UTF-8` a pour superset `ISO-8859-1`. Ce n’est vrai ni dans `SUPERSET_MAP` (qui ne contient que six charsets CJK) ni en général. | Oracle faux : le test échouerait, et il vérifierait une règle inventée. |
+| `decodeAs`, tour 0 | `@Mock` et `@InjectMocks` sur des champs `static`, pour simuler `SUPERSET_MAP`, une map `public static final` non modifiable. | Mockito n’injecte pas dans un champ `static final` ; la map réelle resterait utilisée. |
+| `decodeAs`, tour 1 | `new CharsetSupersets()` alors que le constructeur est privé ; `when(...)` appliqué à une vraie `HashMap`. | Erreurs de compilation et d’exécution supplémentaires. |
+| `supersetOf`, les deux tours | `when(Charset.forName(...))` tente de simuler une méthode statique du JDK ; réflexion pour écraser `SUPERSET_MAP` ; `Field` non importé. | Impossible avec Mockito standard ; écrire un champ `static final` par réflexion échoue sur un JDK moderne. |
+| `supersetOf`, tests 2 et 3 | `Charset.forName("unknown")` et `Charset.forName("exception")` sont appelés pour construire l’entrée. | `UnsupportedCharsetException` levée avant même l’appel à la méthode testée. |
+
+Le seul test réellement correct est `testSupersetOfWithNullCharset` (`supersetOf(null)` doit rendre `null`), mais ce cas est déjà vérifié par `CharsetSupersetsTest`. Dans les brouillons `decodeAs`, l’intention de `testDecodeAs_withoutSuperset` est juste : un charset absent de la map (`ASCII`) doit être rendu tel quel.
+
+Qualitativement, les oracles produits par le modèle sont soit triviaux (`assertNull` sur une entrée `null`), soit faux, car le modèle n’a pas lu le contenu de `SUPERSET_MAP` et a inventé une association `UTF-8 → ISO-8859-1`. Les tests écrits à la main dans `CharsetSupersetsTest` sont plus spécifiques : ils énoncent les six associations CJK réelles avec leurs noms canoniques et démontrent le décodage d’octets d’extension en caractère `U+2460`. Le modèle a surtout tenté de contourner la classe (mocks, réflexion) au lieu d’utiliser ses vraies données, ce qui est inutile pour une classe statique sans dépendance externe.
+
+Nous avons donc corrigé manuellement le brouillon `decodeAs` : Mockito et réflexion retirés, cas « sans superset » et « entrée `null` » conservés, et association inventée remplacée par une entrée réelle de la map (`EUC-KR → x-windows-949`). Le brouillon `supersetOf` a été rejeté : son seul cas valide existait déjà. Au total : 4 échecs de compilation automatiques, puis 1 fichier de tests corrigé à la main (3 tests).
 
 ## PIT et résultats de mutation
 
-PIT 1.30.0 et son adaptateur JUnit 5 1.2.3 sont configurés dans `tika-core/pom.xml`. Les rapports HTML sont produits dans `tika-core/target/pit-reports/`. Les commandes exécutées sont :
+PIT 1.30.0 et son adaptateur JUnit 5 1.2.3 sont configurés dans `tika-core/pom.xml`. La classe ciblée est fixée dans `<targetClasses>`; la suite de tests est lue dans la propriété Maven `pit.targetTests` (par défaut `CharsetSupersets*Test`), ce qui permet de la surcharger en ligne de commande. Les commandes exécutées depuis la racine du dépôt sont :
 
 ```sh
-mvn -f tika-core/pom.xml \
-  -DtargetTests=org.apache.tika.detect.CharsetSupersetsTest \
-  org.pitest:pitest-maven:1.30.0:mutationCoverage
+mvn -B install -pl tika-core -am -DskipTests
 
-mvn -f tika-core/pom.xml \
-  '-DtargetTests=org.apache.tika.detect.CharsetSupersets*Test' \
-  org.pitest:pitest-maven:1.30.0:mutationCoverage
+# Tests originaux seulement
+mvn org.pitest:pitest-maven:1.30.0:mutationCoverage -pl tika-core \
+  -Dpit.targetTests=org.apache.tika.detect.CharsetSupersetsTest \
+  -DreportsDirectory=target/pit-reports-originaux
+
+# Tests originaux + tests ajoutés
+mvn org.pitest:pitest-maven:1.30.0:mutationCoverage -pl tika-core \
+  -DreportsDirectory=target/pit-reports-etendus
 ```
+
+Les rapports HTML sont versionnés hors de `target/` : [rapport PIT, tests originaux](docs-tache2/pit/originaux/org.apache.tika.detect/CharsetSupersets.java.html) et [rapport PIT, suite étendue](docs-tache2/pit/etendus/org.apache.tika.detect/CharsetSupersets.java.html) (télécharger le dossier et ouvrir `index.html` pour la vue colorée). Le workflow GitHub Actions régénère les deux rapports à chaque push et les publie comme artefact `rapports-pitest`.
 
 | Suite utilisée | Mutants tués | Score de mutation | Couverture de lignes PIT | Mutants sans couverture |
 |---|---:|---:|---:|---:|
@@ -91,7 +121,9 @@ mvn -f tika-core/pom.xml \
 
 Résultat ciblé : 6 tests exécutés, 0 échec, 0 erreur. La suite complète de `tika-core` a aussi réussi localement : 752 tests exécutés, 0 échec, 0 erreur, 2 tests ignorés. Checkstyle a rapporté 0 violation. Le rapport PIT a été exécuté avec les deux configurations et donne les scores présentés ci-dessus.
 
-Sur GitHub Actions, les six tests ciblés ont réussi sur les builds Linux JDK 17, 21 et 25. Les builds Windows standard et multi-locale ont réussi après l’activation de `core.longpaths`. Les builds Linux complets ont ensuite échoué dans `tika-pipes-s3-integration-tests`, lorsque Testcontainers n’a pas pu télécharger l’image MinIO (« unauthorized: access to the requested resource is not authorized »). Cette erreur concerne une intégration S3 sans lien avec `CharsetSupersets`; elle ne constitue pas un succès du build complet. Les tests ajoutés sont bien exécutés et réussis dans ces workflows avant cette erreur ultérieure.
+Le workflow dédié [`.github/workflows/tache2.yml`](.github/workflows/tache2.yml) compile `tika-core`, exécute `CharsetSupersetsTest` et `CharsetSupersetsDecodeAsTest` (6 tests, 0 échec), puis lance PIT avec les tests originaux et avec la suite étendue. Il réussit sur GitHub Actions : [exécutions du workflow tache2](https://github.com/yohanzytoon/IFT3913-tache2-tika/actions/workflows/tache2.yml).
+
+Les workflows Tika existants ont aussi été observés. Sur ces builds, les six tests ciblés ont réussi sur les builds Linux JDK 17, 21 et 25. Les builds Windows standard et multi-locale ont réussi après l’activation de `core.longpaths`. Les builds Linux complets ont ensuite échoué dans `tika-pipes-s3-integration-tests`, lorsque Testcontainers n’a pas pu télécharger l’image MinIO (« unauthorized: access to the requested resource is not authorized »). Cette erreur concerne une intégration S3 sans lien avec `CharsetSupersets`; elle ne constitue pas un succès du build complet. Les tests ajoutés sont bien exécutés et réussis dans ces workflows avant cette erreur ultérieure.
 
 - [Build Linux JDK 17](https://github.com/yohanzytoon/IFT3913-tache2-tika/actions/runs/38431765884)
 - [Build Linux JDK 21](https://github.com/yohanzytoon/IFT3913-tache2-tika/actions/runs/38431764951)
@@ -103,13 +135,13 @@ Sur GitHub Actions, les six tests ciblés ont réussi sur les builds Linux JDK 1
 
 | Critère | Éléments documentés |
 |---|---|
-| Choix et couverture de la classe | Couverture JaCoCo de départ, tests préexistants et mutants PIT non couverts dans `decodeAs`. |
-| ChatUniTest et génération | Version du plugin dans Maven, classe ciblée, commande exacte, modèle Ollama et emplacement des diagnostics. |
-| Critique des tests générés | Quatre compilations échouées, dépendances manquantes, problème d’oracle circulaire et sélection des cas réutilisables après correction. |
-| Mutation | Commandes PIT, configuration, scores avec tests originaux puis suite étendue et nombres de mutants. |
+| Choix et couverture de la classe | Couverture JaCoCo de départ, tests préexistants, 2 mutants sur 5 non détectés par la suite originale et justification du choix d’une seule classe. |
+| ChatUniTest et génération | Version du plugin dans Maven, classe ciblée, commande exacte, modèle Ollama (`qwen2.5-coder:7b`) et brouillons versionnés dans `docs-tache2/chatunitest/`. |
+| Critique des tests générés | Quatre compilations échouées, Mockito absent, réparation inefficace, oracle inventé (`UTF-8 → ISO-8859-1`), comparaison avec les oracles écrits à la main et cas réutilisés après correction. |
+| Mutation | Commandes PIT reproductibles (`-Dpit.targetTests`), scores avec tests originaux puis suite étendue, rapports HTML versionnés dans `docs-tache2/pit/`. |
 | Mutants détectés | Les cinq mutants et le comportement exercé pour les tuer sont décrits; aucun mutant vivant ou sans couverture ne reste dans cette exécution. |
 | Tests ajoutés à la main | Nom, intention, motivation des données et oracle explicite pour chacun des trois tests. |
-| Exécution | Résultats locaux complets et ciblés, résultats CI des tests ciblés et cause externe des échecs Linux complets. |
+| Exécution | Workflow dédié `tache2.yml` vert (tests ciblés + PIT), résultats locaux et cause externe des échecs des builds Tika complets. |
 | Emplacement du rapport | Ce fichier est le rapport unique à la racine du dépôt. |
 
 ## Références
@@ -123,6 +155,6 @@ Sur GitHub Actions, les six tests ciblés ont réussi sur les builds Linux JDK 1
 
 ## Utilisation de l’IA générative
 
-ChatUniTest 2.1.1 a servi à générer des brouillons de tests pour `CharsetSupersets` avec le modèle local Qwen2.5-Coder 3B exécuté par Ollama. Le modèle a reçu la classe cible et a produit des propositions pour `supersetOf` et `decodeAs`; ses sorties et erreurs de compilation ont été examinées manuellement. Aucun brouillon brut n’a été intégré tel quel : les quatre tentatives de compilation ont échoué, et les tests retenus ont été corrigés pour retirer les dépendances absentes et remplacer l’oracle circulaire par des résultats attendus explicites.
+ChatUniTest 2.1.1 a servi à générer des brouillons de tests pour `CharsetSupersets` avec le modèle local Qwen2.5-Coder 7B exécuté par Ollama. Le modèle a reçu la classe cible et a produit des propositions pour `supersetOf` et `decodeAs`; ses sorties et erreurs de compilation ont été examinées manuellement. Aucun brouillon brut n’a été intégré tel quel : les quatre tentatives de compilation ont échoué, et les tests retenus ont été corrigés pour retirer les dépendances absentes et remplacer l’association inventée par des résultats attendus explicites.
 
 Un assistant de programmation basé sur un modèle de langage a également aidé à organiser et relire cette documentation ainsi qu’à interpréter les résultats CI. Les membres de l’équipe ont vérifié les commandes, les rapports de tests, les mutants PIT et les journaux GitHub Actions avant de rapporter les résultats. L’IA a servi d’assistance; les mesures et les conclusions présentées ici sont rattachées aux exécutions décrites dans ce rapport.

@@ -1,0 +1,69 @@
+package org.apache.tika.detect;
+
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+public class CharsetSupersets_supersetOf_0_0_Test {
+
+    @Test
+    public void testSupersetOfWithNullCharset() {
+        // Arrange
+        Charset detected = null;
+        // Act
+        Charset result = CharsetSupersets.supersetOf(detected);
+        // Assert
+        assertNull(result);
+    }
+
+    @Test
+    public void testSupersetOfWithUnknownCharset() throws Exception {
+        // Arrange
+        Map<String, String> mockMap = new HashMap<>();
+        // Assuming utf-8 is a superset of unknown
+        mockMap.put("unknown", "utf-8");
+        when(Charset.forName(anyString())).thenReturn(Charset.forName("UTF-8"));
+        Field superSetMapField = CharsetSupersets.class.getDeclaredField("SUPERSET_MAP");
+        superSetMapField.setAccessible(true);
+        superSetMapField.set(null, mockMap);
+        // Act
+        Charset result = CharsetSupersets.supersetOf(Charset.forName("unknown"));
+        // Assert
+        assertEquals(Charset.forName("UTF-8"), result);
+    }
+
+    @Test
+    public void testSupersetOfWithException() throws Exception {
+        // Arrange
+        Map<String, String> mockMap = new HashMap<>();
+        mockMap.put("exception", "invalid");
+        when(Charset.forName(anyString())).thenThrow(new IllegalArgumentException());
+        Field superSetMapField = CharsetSupersets.class.getDeclaredField("SUPERSET_MAP");
+        superSetMapField.setAccessible(true);
+        superSetMapField.set(null, mockMap);
+        // Act
+        Charset result = CharsetSupersets.supersetOf(Charset.forName("exception"));
+        // Assert
+        assertNull(result);
+    }
+}
+
+--------------------------------------------
+Error in CharsetSupersets_supersetOf_0_0_Test: line -1 : Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+Error in CharsetSupersets_supersetOf_0_0_Test: line -1 : Supported source version 'RELEASE_17' from annotation processor 'org.apache.tika.annotation.TikaComponentProcessor' less than -source '21'
+Error in CharsetSupersets_supersetOf_0_0_Test: line 9 : package org.mockito does not exist
+Error in CharsetSupersets_supersetOf_0_0_Test: line 12 : package org.mockito.junit.jupiter does not exist
+Error in CharsetSupersets_supersetOf_0_0_Test: line 7 : package org.mockito does not exist

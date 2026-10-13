@@ -121,6 +121,11 @@
     </dependency>
   </dependencies>
 
+  <properties>
+    <!-- Surchargeable : -Dpit.targetTests=org.apache.tika.detect.CharsetSupersetsTest -->
+    <pit.targetTests>org.apache.tika.detect.CharsetSupersets*Test</pit.targetTests>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -177,7 +182,7 @@
             <param>org.apache.tika.detect.CharsetSupersets</param>
           </targetClasses>
           <targetTests>
-            <param>org.apache.tika.detect.CharsetSupersets*Test</param>
+            <param>${pit.targetTests}</param>
           </targetTests>
           <threads>1</threads>
           <timestampedReports>false</timestampedReports>

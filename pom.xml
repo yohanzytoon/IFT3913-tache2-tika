@@ -307,6 +307,9 @@ least three +1 Tika PMC votes are cast.
           <inputExcludes>
             <inputExclude>CHANGES.txt</inputExclude>
             <inputExclude>README.md</inputExclude>
+            <!-- IFT3913 tâche 2 : rapport et rapports PIT générés -->
+            <inputExclude>readme.md</inputExclude>
+            <inputExclude>docs-tache2/**</inputExclude>
             <!-- remove this once we figure out the bundle packaging -->
             <inputExclude>tika-bundle/src/main/resources/META-INF/MANIFEST.MF</inputExclude>
             <inputExclude>.gitattributes</inputExclude>
